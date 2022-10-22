@@ -1,4 +1,5 @@
 import pandas as pd
+from pathlib import Path
 
 csv_data = pd.read_csv("../data/original_data/traffic_density_202105.csv")
 
@@ -36,13 +37,12 @@ result_df = pd.DataFrame()
 
 latitude_detector = {x: False}
 while True:
-    if csv_data['LATITUDE'].values[x] == csv_data['LATITUDE'].values[x+1]:
+    if abs(csv_data['LATITUDE'].values[x] - csv_data['LATITUDE'].values[x+1]) < 0.0000001:
         # MINIMUM_SPEED,MAXIMUM_SPEED,AVERAGE_SPEED,NUMBER_OF_VEHICLES
         if not list(latitude_detector.values())[0]:
-            latitude_detector = {csv_data['LATITUDE'].values[x]: True}
             new_df = pd.DataFrame(
                 csv_data[csv_data["LATITUDE"] == csv_data['LATITUDE'].values[x]],
-                columns=csv_data.columns)
+                columns=column_list)
             same_point_min_speed = \
                 new_df['MINIMUM_SPEED'].values.mean()
             same_point_max_speed = \
@@ -60,32 +60,38 @@ while True:
                 "AVERAGE_SPEED": same_point_average_speed,
                 "NUMBER_OF_VEHICLES": same_point_number_of_vehicles
             }
-            result_df = pd.DataFrame(
-                dict_for_result,
-                columns=list(dict_for_result.keys()),
-                index=pd.Index([x]))
-            # some_index_list = ["afafaefaedas"]
-            # result_df.reindex(index=some_index_list, columns=["AEGFAEFAEFAEFAEGAEF",
-            #    "LONGITUDE",
-            #    "LATITUDE",
-            #    "MINIMUM_SPEED",
-            #    "MAXIMUM_SPEED",
-            #    "AVERAGE_SPEED",
-            #    "NUMBER_OF_VEHICLES"])
+            # result_df = pd.DataFrame(
+            #     dict_for_result,
+            #     columns=list(dict_for_result.keys()),
+            #     index=pd.Index([x]))
+            result_df = result_df.append(dict_for_result, ignore_index=True)
+
             print("result_df.index: ", result_df.index)
             print(result_df)
-            break
-        x+=1
+            latitude_detector = {csv_data['LATITUDE'].values[x]: True}
+
+        x += 1
+        # if x == len(csv_data)-50:
+        #     result_df.to_csv('../data/editted_traffic_data.csv', index=False)
+        #     print("csvvvvvvvvv")
+        #     break
+
         if x%1000==1:
             print("x-if: ", x) # 121217 row count
-        # print("--------------\n\n\n")
     else:
-        if not list(latitude_detector.values())[0]:
+        if list(latitude_detector.values())[0]:
             latitude_detector = {csv_data['LATITUDE'].values[x]: False}
         # if x%1000==1:
         #     print("x-else: ", x)
         # if  x > len(csv_data.index):
         #     print("dewam")
+        print("x-else: ", x)
         x += 1
-        break
+
+
+
+# filepath = Path('/home/ataparlar/itu/GEO403E - GIS Projects/Project/data/original_data/out1.csv')
+# filepath.parent.mkdir(parents=True, exist_ok=True)
+# result_df.to_csv(filepath)
+
 
