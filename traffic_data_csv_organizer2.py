@@ -76,88 +76,55 @@ for index_csv, row_csv in csv_data.iterrows():
     """
     # same_df = same_point_data_frame_extractor(csv_data)
     # print(same_df)
-    same_df = pd.DataFrame(columns=csv_data.columns)
-
-    for index_same, row_same in same_df.iterrows():
-        if index_same == 0:
-            first_value = row_same["LATITUDE"]
-            same_df = same_df.drop(same_df.index)
-            # same_df = pd.DataFrame(row_same, columns=csv_data.columns)
-            same_df = same_df.append(row_same)
-            continue
-        if index_same == 1:
-            second_value = row_same["LATITUDE"]
-            same_df = same_df.append(row_same)
-
-        if abs(first_value - second_value) < 0.0000001:
-            # print(new_df)
-            same_df = same_df.append(row_same)
-
-            second_value = first_value
-            first_value = row_same["LATITUDE"]
-            # print("\n")
-
-    same_point_min_speed = \
-        same_df['MINIMUM_SPEED'].values.mean()
-    same_point_max_speed = \
-        same_df['MAXIMUM_SPEED'].values.mean()
-    same_point_average_speed = \
-        same_df['AVERAGE_SPEED'].values.mean()
-    same_point_number_of_vehicles = \
-        same_df['NUMBER_OF_VEHICLES'].values.mean()
-    dict_for_result = {
-        "index": same_df["index"].values[0],
-        "DATE_TIME": same_df['DATE_TIME'].values[index_csv],
-        "LONGITUDE": same_df['LONGITUDE'].values[index_csv],
-        "LATITUDE": same_df['LATITUDE'].values[index_csv],
-        "GEOHASH": same_df['GEOHASH'].values[index_csv],
-        "MINIMUM_SPEED": same_point_min_speed,
-        "MAXIMUM_SPEED": same_point_max_speed,
-        "AVERAGE_SPEED": same_point_average_speed,
-        "NUMBER_OF_VEHICLES": same_point_number_of_vehicles
-    }
-    result_df = result_df.append(dict_for_result, ignore_index=True)
-    print(result_df)
-
-    # for index_same_df, row_same_df in same_df:
-    #     new_df = pd.DataFrame(
-    #         csv_data[csv_data["LATITUDE"] == csv_data['LATITUDE'].values[x]],
-    #         columns=column_list)
-    #     same_point_min_speed = \
-    #         new_df['MINIMUM_SPEED'].values.mean()
-    #     same_point_max_speed = \
-    #         new_df['MAXIMUM_SPEED'].values.mean()
-    #     same_point_average_speed = \
-    #         new_df['AVERAGE_SPEED'].values.mean()
-    #     same_point_number_of_vehicles = \
-    #         new_df['NUMBER_OF_VEHICLES'].values.mean()
-    #     dict_for_result = {
-    #         "DATE_TIME": csv_data['DATE_TIME'].values[x],
-    #         "LONGITUDE": csv_data['LONGITUDE'].values[x],
-    #         "LATITUDE": csv_data['LATITUDE'].values[x],
-    #         "MINIMUM_SPEED": same_point_min_speed,
-    #         "MAXIMUM_SPEED": same_point_max_speed,
-    #         "AVERAGE_SPEED": same_point_average_speed,
-    #         "NUMBER_OF_VEHICLES": same_point_number_of_vehicles
-    #     }
+    if index_csv == 0:
+        first_value = row_csv["LATITUDE"]
+        # same_df = same_df.drop(same_df.index)
+        # same_df = pd.DataFrame(row_same, columns=csv_data.columns)
+        same_df = pd.concat([same_df, row_csv.to_frame().T], ignore_index=True)
+        continue
+    if index_csv == 1:
+        second_value = row_csv["LATITUDE"]
+        same_df = pd.concat([same_df, row_csv.to_frame().T], ignore_index=True)
 
 
-    # if index_csv == 0:
-    #     first_value = row_csv["LATITUDE"]
-    #     new_df = pd.DataFrame(row_csv, columns=csv_data.columns)
-    #     new_df = new_df.append(row_csv)
-    #     continue
-    # if index_csv == 1:
-    #     second_value = row_csv["LATITUDE"]
-    #     new_df = new_df.append(row_csv)
-    #
-    # if abs(first_value - second_value) < 0.0000001:
-    #
-    #     print(new_df)
-    #     new_df = new_df.append(row_csv)
-    #
-    #
-    #     second_value = first_value
-    #     first_value = row_csv["LATITUDE"]
-    #     print("\n")
+    if abs(first_value - second_value) < 0.0000001:
+        # print(new_df)
+        same_df = pd.concat([same_df, row_csv.to_frame().T], ignore_index=True)
+
+        second_value = first_value
+        first_value = row_csv["LATITUDE"]
+        # print("\n")
+    else:
+        same_point_min_speed = \
+            same_df['MINIMUM_SPEED'].values.mean()
+        same_point_max_speed = \
+            same_df['MAXIMUM_SPEED'].values.mean()
+        same_point_average_speed = \
+            same_df['AVERAGE_SPEED'].values.mean()
+        same_point_number_of_vehicles = \
+            same_df['NUMBER_OF_VEHICLES'].values.mean()
+        dict_for_result = {
+            "index": same_df["index"].values[0],
+            "DATE_TIME": same_df['DATE_TIME'].values[0],
+            "LONGITUDE": same_df['LONGITUDE'].values[0],
+            "LATITUDE": same_df['LATITUDE'].values[0],
+            "GEOHASH": same_df['GEOHASH'].values[0],
+            "MINIMUM_SPEED": same_point_min_speed,
+            "MAXIMUM_SPEED": same_point_max_speed,
+            "AVERAGE_SPEED": same_point_average_speed,
+            "NUMBER_OF_VEHICLES": same_point_number_of_vehicles
+        }
+        instant_df = pd.Series(dict_for_result)
+
+        result_df = pd.concat([result_df, instant_df.to_frame().T], ignore_index=True)
+        if index_csv%400==1:
+            print(result_df)
+
+        second_value = first_value
+        first_value = row_csv["LATITUDE"]
+        same_df = pd.DataFrame(columns=csv_data.columns)
+
+result_df.to_csv('../data/editted_traffic_data1.csv', index=False)
+print("csvvvvvvvvv")
+
 
